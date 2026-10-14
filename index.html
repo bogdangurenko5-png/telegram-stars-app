@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Магазин Stars & Premium</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: var(--tg-theme-bg-color, #ffffff);
+      --text: var(--tg-theme-text-color, #000000);
+      --btn: var(--tg-theme-button-color, #2481cc);
+      --btn-text: var(--tg-theme-button-text-color, #ffffff);
+      --card-bg: var(--tg-theme-secondary-bg-color, #f4f4f5);
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      margin: 0;
+    }
+    h2 { font-size: 18px; margin-top: 10px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+    .price { font-weight: bold; color: var(--btn); margin: 8px 0; }
+    button {
+      background: var(--btn);
+      color: var(--btn-text);
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      width: 100%;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Telegram Stars ⭐</h2>
+  <div class="grid">
+    <div class="card">
+      <div>⭐ 100</div>
+      <div class="price">100 XTR</div>
+      <button onclick="buy('stars_100')">Купить</button>
+    </div>
+    <div class="card">
+      <div>🌟 500</div>
+      <div class="price">500 XTR</div>
+      <button onclick="buy('stars_500')">Купить</button>
+    </div>
+  </div>
+
+  <h2>Telegram Premium 💎</h2>
+  <div class="card">
+    <div>💎 Премиум на 1 месяц</div>
+    <div class="price">250 XTR</div>
+    <button onclick="buy('premium_1m')">Оформить</button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    async function buy(productId) {
+      const user = tg.initDataUnsafe?.user;
+      if (!user) return alert('Запустите через Telegram!');
+
+      const SERVER_URL = 'https://YOUR-SERVER-URL.render.com';
+
+      try {
+        const res = await fetch(`${SERVER_URL}/create-invoice`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId, userId: user.id })
+        });
+        const data = await res.json();
+
+        if (data.invoiceUrl) {
+          tg.openInvoice(data.invoiceUrl, (status) => {
+            if (status === 'paid') tg.showAlert('Оплата прошла успешно! 🎉');
+          });
+        }
+      } catch (e) {
+        alert('Ошибка оплаты');
+      }
+    }
+  </script>
+</body>
+</html>
+ 
